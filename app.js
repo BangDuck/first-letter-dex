@@ -633,9 +633,11 @@
     if (!e) return;
     var bg = selectedBg();
     drawBackground(ctx, bg, e);
+    hideResult();
     loadArt(artUrl(e.art)).then(function (img) {
       if (current !== e) return;
       drawProfile(ctx, img, selectedBg(), e);
+      prepare(e, selectedBg());
     }).catch(function () {
       statusEl.textContent = "일러스트를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.";
     });
@@ -644,6 +646,77 @@
   document.querySelectorAll('input[name="bg"]').forEach(function (r) {
     r.addEventListener("change", renderPreview);
   });
+
+  // 아이폰·아이패드: 다운로드하면 '파일' 앱으로 가므로, 공유 창의 '이미지 저장'으로 사진 앱에 넣는다
+  var IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var resultBox = $("profile-result");
+  var resultImg = $("profile-result-img");
+  var resultUrl = null;
+
+  // 공유 창은 버튼을 누른 '바로 그 순간'에 열어야 해서, 저장할 이미지를 미리 만들어 둔다
+  var prepared = null; // { e, bg, blob }
+  function prepare(e, bg) {
+    if (prepared && prepared.e === e && prepared.bg === bg) return;
+    var p = { e: e, bg: bg, blob: null };
+    prepared = p;
+    makeProfileBlob(e, bg).then(function (blob) { p.blob = blob; }, function () {});
+  }
+
+  function fileNameFor(e, bg) {
+    return e.name.replace(/[\\/:*?"<>|\s]+/g, "_") + "_No" + pad4(e.id) + "_" + BG_LABEL[bg] + ".png";
+  }
+
+  function shareableFile(blob, name) {
+    if (!navigator.share || !navigator.canShare || typeof File !== "function") return null;
+    var file = new File([blob], name, { type: "image/png" });
+    try {
+      return navigator.canShare({ files: [file] }) ? file : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function hideResult() {
+    resultBox.hidden = true;
+    if (resultUrl) { URL.revokeObjectURL(resultUrl); resultUrl = null; }
+  }
+
+  // 공유 창을 쓸 수 없을 때(인앱 브라우저 등): 이미지를 보여 주고 길게 눌러 저장하게 안내
+  function showResult(blob) {
+    hideResult();
+    resultUrl = URL.createObjectURL(blob);
+    resultImg.src = resultUrl;
+    resultBox.hidden = false;
+    statusEl.textContent = "";
+    resultBox.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function saveToPhotos(blob, name) {
+    var file = shareableFile(blob, name);
+    if (!file) {
+      showResult(blob);
+      return;
+    }
+    statusEl.textContent = "공유 창에서 '이미지 저장'을 누르면 사진 앱에 저장돼요.";
+    navigator.share({ files: [file] }).catch(function (err) {
+      if (err && err.name === "AbortError") {
+        statusEl.textContent = "저장을 취소했어요.";
+      } else {
+        showResult(blob); // 공유 창이 막힌 경우
+      }
+    });
+  }
+
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = el("a", { href: url, download: name });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    statusEl.textContent = "저장했어요: " + name + " (800×800)";
+  }
 
   // 800×800 PNG 파일 데이터를 만든다
   function makeProfileBlob(e, bg) {
@@ -666,18 +739,18 @@
     var e = current;
     if (!e) return;
     var bg = selectedBg();
+    var name = fileNameFor(e, bg);
+
+    // 아이폰에서 이미지가 미리 준비돼 있으면 바로 공유 창을 연다
+    if (IS_IOS && prepared && prepared.e === e && prepared.bg === bg && prepared.blob) {
+      saveToPhotos(prepared.blob, name);
+      return;
+    }
+
     saveBtn.disabled = true;
     statusEl.textContent = "이미지를 만드는 중…";
     makeProfileBlob(e, bg).then(function (blob) {
-      var name = e.name.replace(/[\\/:*?"<>|\s]+/g, "_");
-      var file = name + "_No" + pad4(e.id) + "_" + BG_LABEL[bg] + ".png";
-      var url = URL.createObjectURL(blob);
-      var a = el("a", { href: url, download: file });
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-      statusEl.textContent = "저장했어요: " + file + " (800×800)";
+      if (IS_IOS) saveToPhotos(blob, name); else download(blob, name);
     }).catch(function (err) {
       statusEl.textContent = err && err.name === "SecurityError"
         ? "보안 규칙 때문에 이미지를 저장할 수 없어요. 다른 브라우저로 시도해 주세요."
