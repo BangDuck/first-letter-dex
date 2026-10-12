@@ -874,6 +874,25 @@ body:has(.detail[open]) { overflow: hidden; }
 .btn-save:active { transform: translateY(3px); box-shadow: 0 1px 0 #a07d00; }
 .btn-save:disabled { opacity: .6; cursor: wait; }
 .profile__status { margin: 8px 0 0; min-height: 1.2em; font-size: 13px; color: #ffe9a6; word-break: keep-all; }
+.profile__result { margin: 10px 0 0; text-align: center; }
+.profile__result img {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 0 0 3px #fff;
+  -webkit-touch-callout: default; /* 아이폰에서 길게 눌러 저장 허용 */
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #d8d8d8 25%, transparent 25%, transparent 75%, #d8d8d8 75%),
+    linear-gradient(45deg, #d8d8d8 25%, transparent 25%, transparent 75%, #d8d8d8 75%);
+  background-size: 14px 14px;
+  background-position: 0 0, 7px 7px;
+}
+.profile__result figcaption { margin-top: 8px; font-size: 14px; line-height: 1.5; word-break: keep-all; }
+.profile__result strong { color: var(--focus); }
 
 /* ---------------------------------------------------------- 더 큰 화면 */
 
