@@ -167,6 +167,7 @@
   var noteEl = $("lcd-note");
   var cardsEl = $("cards");
   var emptyEl = $("results-empty");
+  var hintEl = $("results-hint");
 
   function el(tag, attrs, children) {
     var node = document.createElement(tag);
@@ -258,6 +259,7 @@
   function showIdle() {
     setMsg("글자 하나를 넣으면 그 글자로 <strong>시작하는</strong> 포켓몬만 찾아드려요.");
     cardsEl.innerHTML = "";
+    hintEl.hidden = true;
     emptyEl.innerHTML = "";
     emptyEl.appendChild(el("h2", { text: "이렇게 찾아보세요" }));
     emptyEl.appendChild(el("p", { text: "자기 성(姓)을 넣어 보세요. 예를 들어 '피'를 넣으면 피카츄가 나오지만, '카'를 넣으면 피카츄는 나오지 않아요." }));
@@ -268,6 +270,7 @@
   function showNone(ch) {
     setMsg(MSG_NONE, true);
     cardsEl.innerHTML = "";
+    hintEl.hidden = true;
     var s = suggest(ch);
     emptyEl.innerHTML = "";
     emptyEl.appendChild(el("h2", { text: "'" + ch + "'" + josaRo(ch) + " 시작하는 포켓몬이 없어요" }));
@@ -285,6 +288,7 @@
   function showResults(ch, list) {
     setMsg("'<strong>" + esc(ch) + "</strong>'" + josaRo(ch) + " 시작하는 포켓몬 <strong>" + list.length + "</strong>마리 발견");
     emptyEl.hidden = true;
+    hintEl.hidden = false;
     var frag = document.createDocumentFragment();
     list.forEach(function (item, i) { frag.appendChild(card(item, i)); });
     cardsEl.innerHTML = "";
@@ -309,6 +313,7 @@
       setMsg(MSG_INVALID, true);
       cardsEl.innerHTML = "";
       emptyEl.hidden = true;
+      hintEl.hidden = true;
       return;
     }
     var list = lookup(ch);
