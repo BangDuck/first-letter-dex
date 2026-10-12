@@ -500,6 +500,44 @@ body {
 .chip:hover { transform: translateY(-2px); }
 .chip:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
 
+/* 카드를 눌러 보도록 유도하는 안내 말풍선 */
+.results__hint {
+  position: relative;
+  margin: 0 0 16px;
+  padding: 10px 40px 10px 14px;
+  border-radius: 10px;
+  background: var(--focus);
+  color: var(--ink);
+  font-family: var(--pixel);
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: keep-all;
+  box-shadow: 0 3px 0 #a07d00;
+  animation: hint-in .4s ease-out .25s both;
+}
+.results__hint strong { font-weight: 400; color: var(--red-deep); }
+/* 말풍선 꼬리 (카드 쪽을 가리킴) */
+.results__hint::after {
+  content: "";
+  position: absolute;
+  left: 28px; bottom: -9px;
+  border: 9px solid transparent;
+  border-bottom: 0;
+  border-top-color: var(--focus);
+}
+.results__arrow {
+  position: absolute;
+  right: 14px; top: 50%;
+  margin-top: -.75em;
+  color: var(--red);
+  animation: hint-bob .9s ease-in-out infinite;
+}
+@keyframes hint-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes hint-bob { 50% { transform: translateY(4px); } }
+
 .cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
