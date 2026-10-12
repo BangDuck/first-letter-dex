@@ -106,7 +106,7 @@
   var state = {
     char: "",
     dueum: false,       // 두음법칙 (기본 꺼짐)
-    includeForms: false // 특수 폼 (기본 꺼짐: 기본 모습만)
+    includeForms: true  // 특수 폼 (기본 켜짐)
   };
 
   // 결과 항목: { e: 포켓몬, via: 두음법칙으로 함께 찾은 글자 또는 null }
@@ -377,7 +377,7 @@
     var params = [];
     if (state.char) params.push("q=" + encodeURIComponent(state.char));
     if (state.dueum) params.push("dueum=1");
-    if (state.includeForms) params.push("forms=1");
+    if (!state.includeForms) params.push("forms=0"); // 기본값(켜짐)과 다를 때만 주소에 남김
     return location.href.split(/[?#]/)[0] + (params.length ? "?" + params.join("&") : "");
   }
   function updateUrl() {
@@ -396,7 +396,7 @@
       return;
     }
     state.dueum = params.get("dueum") === "1";
-    state.includeForms = params.get("forms") === "1";
+    state.includeForms = params.get("forms") !== "0";
     optDueum.checked = state.dueum;
     optForms.checked = state.includeForms;
     var q = params.get("q");
