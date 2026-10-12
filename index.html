@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>첫 글자 도감</title>
+  <meta name="description" content="한글 한 글자를 입력하면 그 글자로 시작하는 포켓몬만 보여주는 도감. 내 성(姓)으로 시작하는 포켓몬을 찾아 프로필 사진으로 저장하세요.">
+  <meta name="theme-color" content="#c8102e">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/galmuri.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="device" aria-labelledby="app-title">
+    <span class="screw screw--tl" aria-hidden="true"></span>
+    <span class="screw screw--tr" aria-hidden="true"></span>
+    <span class="screw screw--bl" aria-hidden="true"></span>
+    <span class="screw screw--br" aria-hidden="true"></span>
+
+    <!-- 기기 상단: 렌즈 · LED · 제목 -->
+    <header class="device__top">
+      <div class="lens" aria-hidden="true"><span class="lens__glint"></span></div>
+      <div class="leds" aria-hidden="true">
+        <span class="led led--red"></span>
+        <span class="led led--yellow"></span>
+        <span class="led led--green"></span>
+      </div>
+      <h1 id="app-title" class="device__title">첫 글자 도감</h1>
+    </header>
+    <div class="seam" aria-hidden="true"></div>
+
+    <!-- LCD 검색 화면 -->
+    <section class="bezel" aria-label="검색">
+      <div class="bezel__dots" aria-hidden="true"><span></span><span></span></div>
+      <div class="lcd" id="lcd">
+        <form class="lcd__form" id="search-form" role="search" autocomplete="off">
+          <label class="lcd__label" for="q">&gt; 성(姓) 한 글자를 입력하세요</label>
+          <div class="lcd__row">
+            <input class="lcd__input" id="q" name="q" type="text" inputmode="text"
+                   enterkeyhint="search" spellcheck="false" autocapitalize="off"
+                   placeholder="방" aria-describedby="lcd-msg lcd-note">
+            <span class="lcd__cursor" aria-hidden="true"></span>
+          </div>
+        </form>
+        <p class="lcd__msg" id="lcd-msg" aria-live="polite"></p>
+        <p class="lcd__note" id="lcd-note" aria-live="polite"></p>
+        <span class="lcd__beep" aria-hidden="true">삐빅!</span>
+        <span class="lcd__scan" aria-hidden="true"></span>
+      </div>
+      <div class="bezel__bottom" aria-hidden="true">
+        <span class="bezel__led"></span>
+        <span class="speaker"><i></i><i></i><i></i><i></i></span>
+      </div>
+    </section>
+
+    <!-- 옵션 (2차 기능) -->
+    <section class="panel options" aria-label="검색 옵션">
+      <div class="options__switches">
+        <label class="switch">
+          <input type="checkbox" id="opt-dueum">
+          <span class="switch__track" aria-hidden="true"></span>
+          <span class="switch__text">두음법칙<small>'이'를 찾으면 '리'·'니'도 함께</small></span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="opt-forms">
+          <span class="switch__track" aria-hidden="true"></span>
+          <span class="switch__text">특수 폼<small>메가진화·리전폼 등 포함</small></span>
+        </label>
+      </div>
+      <div class="options__row" id="recent-row" hidden>
+        <span class="options__label" id="recent-label">최근 검색</span>
+        <ul class="chips chips--mini" id="recent" aria-labelledby="recent-label"></ul>
+        <button type="button" class="link-btn" id="recent-clear">지우기</button>
+      </div>
+      <div class="options__row">
+        <button type="button" class="share-btn" id="share">공유 링크 복사</button>
+        <span class="options__status" id="share-status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <!-- 결과 목록 -->
+    <section class="results" aria-label="검색 결과">
+      <div class="results__empty" id="results-empty" hidden></div>
+      <ul class="cards" id="cards"></ul>
+    </section>
+
+    <div class="device__foot" aria-hidden="true">
+      <span class="dpad"></span>
+      <span class="pill-btn"></span><span class="pill-btn"></span>
+      <span class="grille"></span>
+    </div>
+  </main>
+
+  <footer class="credits">
+    <p>비공식 팬 프로젝트입니다. 포켓몬 및 관련 이미지의 저작권은 Nintendo, Creatures, GAME FREAK, The Pokémon Company에 있습니다.</p>
+    <p class="credits__src">데이터: <a href="https://pokeapi.co" target="_blank" rel="noopener">PokeAPI</a> · 포켓몬코리아 공식 도감 · 폰트: <a href="https://galmuri.quiple.dev" target="_blank" rel="noopener">Galmuri</a> (OFL)</p>
+  </footer>
+
+  <!-- 상세 보기 -->
+  <dialog class="detail" id="detail" aria-labelledby="detail-name">
+    <div class="dexpage">
+      <div class="dexpage__head">
+        <span class="dexpage__no" id="detail-no"></span>
+        <button class="dexpage__close" id="detail-close" type="button" aria-label="닫기">✕</button>
+      </div>
+      <h2 class="dexpage__name" id="detail-name"></h2>
+      <p class="dexpage__en" id="detail-en"></p>
+      <div class="dexpage__art">
+        <img id="detail-img" alt="" width="475" height="475" crossorigin="anonymous" decoding="async">
+      </div>
+      <table class="dextable">
+        <tbody>
+          <tr><th scope="row">분류</th><td id="detail-genus"></td></tr>
+          <tr><th scope="row">타입</th><td id="detail-types"></td></tr>
+          <tr><th scope="row">키</th><td id="detail-height"></td></tr>
+          <tr><th scope="row">몸무게</th><td id="detail-weight"></td></tr>
+        </tbody>
+      </table>
+      <div class="dialogue">
+        <p id="detail-flavor"></p>
+        <span class="dialogue__caret" aria-hidden="true">▼</span>
+      </div>
+
+      <section class="profile" aria-labelledby="profile-title">
+        <h3 class="profile__title" id="profile-title">프로필 사진 만들기</h3>
+        <div class="profile__body">
+          <div class="profile__preview">
+            <canvas id="profile-canvas" width="800" height="800" role="img" aria-label="원형 미리보기"></canvas>
+            <span class="profile__hint">SNS에서 보이는 모양(원형)</span>
+          </div>
+          <fieldset class="profile__bgs">
+            <legend>배경</legend>
+            <label><input type="radio" name="bg" value="white" checked> 흰색</label>
+            <label><input type="radio" name="bg" value="transparent"> 투명</label>
+            <label><input type="radio" name="bg" value="type"> 타입 색</label>
+            <label><input type="radio" name="bg" value="dex"> 도감 화면</label>
+          </fieldset>
+        </div>
+        <button class="btn-save" id="profile-save" type="button">프로필 사진으로 저장</button>
+        <p class="profile__status" id="profile-status" aria-live="polite"></p>
+      </section>
+    </div>
+  </dialog>
+
+  <script src="data/pokemon-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
